@@ -21,6 +21,6 @@ def get_post(request):
         sql = "insert into Eproducts values (%s, %s)"
         curs.execute(sql, eproduct)
         conn.commit()
-        
-   
-    return render(request, 'data.html', data)
+           
+    return render(request, 'data.html', {'s_no':s_no, 's_wat':s_wat})
+    #return render(request, 'data.html', data)
