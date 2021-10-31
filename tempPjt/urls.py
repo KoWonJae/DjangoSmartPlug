@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #path('Eproducts/', include('students.urls')),
     path('parameter/', views.get_post),
+    path('', views.get_main),
 ]
