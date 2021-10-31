@@ -20,4 +20,5 @@ app_name = 'Eproducts'
 urlpatterns = [
     path('reg/' view.regEprodcut, name = 'reg'),
     path('parameter/', views.get_post),
+    path('', views.get_main),
 ]

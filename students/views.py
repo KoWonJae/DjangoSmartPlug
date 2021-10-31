@@ -4,7 +4,8 @@ import pymysql
 # Create your views here.
 def regEproduct(request):
     return render(request, 'eproducts.html')
-    
+def get_main(request):
+    return render(request, 'main.html')
 def get_post(request):
     if request.method == 'GET':
         s_no = request.GET['s_no']
