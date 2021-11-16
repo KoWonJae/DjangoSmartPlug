@@ -24,4 +24,6 @@ urlpatterns = [
     path('', views.get_main),
     path('sensor/', views.get_sensor),
     path('add/', views.get_device),
+    path('del/', views.get_device),
+    path('current/', views.get_current),
 ]
