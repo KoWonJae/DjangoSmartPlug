@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import pymysql
+from datetime import datetime
 
 # Create your views here.
 def regEproduct(request):
@@ -34,11 +35,14 @@ def get_sensor(request):
             'data':s_no,
             #'s_wat':s_wat,
         }
+        now = datetime.now()
+        current_time = now.strftime("%m%d%H%M%S")
+        current_time = int(current_time)
         
         conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin', password='wj092211', db='smartplug')
         curs = conn.cursor(pymysql.cursors.DictCursor)
-        eproduct = (s_no, s_wat)
-        sql = "insert into Eproducts values (%s, %s)"
+        eproduct = (s_no, current_time, s_wat)
+        sql = "insert into Eproducts2 values (%s, %s, %s)"
         curs.execute(sql, eproduct)
         conn.commit()
            
