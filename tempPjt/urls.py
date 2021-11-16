@@ -23,4 +23,5 @@ urlpatterns = [
     path('parameter/', views.get_post),
     path('', views.get_main),
     path('sensor/', views.get_sensor),
+    path('add/', views.get_device),
 ]

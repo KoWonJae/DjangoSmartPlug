@@ -48,3 +48,19 @@ def get_sensor(request):
            
     return render(request, 'data2.html', {'s_no':s_no, 's_wat':s_wat})
     #return render(request, 'data.html', data)
+    
+
+def get_device(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        s_no = body["id"]
+        s_wat = body["sn"]
+        #conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin', password='wj092211', db='smartplug')
+        #curs = conn.cursor(pymysql.cursors.DictCursor)
+        #eproduct = (s_no, current_time, s_wat)
+        #sql = "insert into Eproducts3 values (%s, %s, %s)"
+        #curs.execute(sql, eproduct)
+        #conn.commit()
+           
+    return render(request, 'data.html', {'s_no':s_no, 's_wat':s_wat})
+    #return render(request, 'data.html', data)
