@@ -5,8 +5,10 @@ import json
 # Create your views here.
 def regEproduct(request):
     return render(request, 'eproducts.html')
+    
 def get_main(request):
     return render(request, 'main.html')
+    
 def get_post(request):
     if request.method == 'GET':
         s_no = request.GET['s_no']
@@ -98,13 +100,37 @@ def get_current(request):
         conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
                                password='wj092211', db='smartplug')
         curs = conn.cursor(pymysql.cursors.DictCursor)
-        sql = "select s_wat from Device full outer join Eproducts3 on Device.sn = Eproducts3.s_no where Device.user_id = %s"
+        # sql = "select s_wat from Device left inner join Eproducts3 on (Device.sn = Eproducts3.s_no) where Device.user_id = '%s' "
+        # sql = "SELECT s_wat FROM Eproducts3 e LEFT JOIN Device d ON (e.s_no = d.sn) where d.user_id = 'TEST_ID_001'"
+        # sql = "SELECT s_wat FROM Eproducts3 e LEFT JOIN Device d ON (e.s_no = d.sn) where d.user_id = 's_id'"
+        sql = "SELECT s_wat FROM Eproducts3 e LEFT JOIN Device d ON (e.s_no = d.sn) where d.user_id = %s"
         curs.execute(sql, s_id)
         data = curs.fetchone()
         if(data == None):
             return render(request, 'minus.html', {'s_wat':data})
         else :
-            return render(request, 'data3.html', {'s_wat':data})
+            return render(request, 'data3.html', data)
+
+
+def del_device(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        s_id = data["id"]
+        s_no = data["sn"]
+        conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin', password='wj092211', db='smartplug')
+        curs = conn.cursor(pymysql.cursors.DictCursor)
+        
+        query = "SELECT * FROM Device where sn = %s"
+        curs.execute(query, s_no)
+        result = curs.fetchone()
+        try:
+            if(result['sn'] == s_no and result['user_id'] ==  s_id):
+                return render(request, 'pass.html', {'s_no':s_id, 's_wat':s_no})
+        except:
+            eproduct = ( s_no, s_type, s_id)
+            curs2.execute(sql, eproduct)
+            conn2.commit()
+            return render(request, 'fail.html', {'s_no':s_id, 's_wat':s_no})
 
 
 
