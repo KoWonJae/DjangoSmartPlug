@@ -18,12 +18,16 @@ from django.urls import path
 from students import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    #path('Eproducts/', include('students.urls')),
-    path('parameter/', views.get_post),
     path('', views.get_main),
-    path('sensor/', views.get_sensor),
-    path('add/', views.get_device),
+    path('admin', admin.site.urls),
+    path('parameter', views.get_post),
+    path('sensor', views.add_cur_wat),
+    path('add', views.get_device),
     path('del', views.del_device),
-    path('current/', views.get_current),
+    #del은 아직 삭제 구현x 그래서 전부 pass
+    path('current', views.get_current),
+    path('current2', views.get_current2),
+    path('accumulate', views.get_accumulate),
+    path('average', views.get_average)
+    #path('Eproducts/', include('students.urls')),
 ]
