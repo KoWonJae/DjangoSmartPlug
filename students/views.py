@@ -186,7 +186,7 @@ def add_cur_wat(request):
         if (count % 360 == 0):
             add_acc_wat(request, conn, curs, user_id, s_no)
 
-    return render(request, 'data.html', {'s_no': s_no, 's_wat': s_wat})
+    return render(request, 'data2.html')
 
 
 
