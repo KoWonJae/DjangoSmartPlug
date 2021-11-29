@@ -279,9 +279,10 @@ def get_statistics(request):
             y = []
             for i in data:
                 y.append(float(i['wat']))
-
+            # print(y)
             conn.commit()
             x = np.arange(0,10)
+            # print(x)
             now= datetime.now()
             current_time = str(datetime.now())
 
