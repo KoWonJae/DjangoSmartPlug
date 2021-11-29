@@ -286,7 +286,7 @@ def get_statistics(request):
             current_time = str(datetime.now())
 
             plt.plot(x,y)
-            plt.savefig('media\%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
+            plt.savefig('media/%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
             graph_name = 'http://13.125.200.206:8000/media/%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
             # graph_name = '%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
             # plt.savefig('%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
