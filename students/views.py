@@ -2,7 +2,9 @@ from django.shortcuts import render
 import pymysql
 from datetime import datetime
 import json
+import numpy as np
 # Create your views here.
+import matplotlib.pyplot as plt
 def regEproduct(request):
     return render(request, 'eproducts.html')
 
@@ -259,7 +261,34 @@ def get_average(request):
             except:
                 continue
 
-
-
-
         return render(request, 'data3.html', {'s_wat':result})
+        
+def get_statistics(request):
+    if request.method == 'POST':
+            data = json.loads(request.body)
+            id = data["id"]
+            type = data['type']
+            conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
+                           password='wj092211', db='smartplug')
+            curs = conn.cursor(pymysql.cursors.DictCursor)
+            sql = "SELECT wat FROM CurrentWattage c LEFT JOIN Device d ON (c.sn = d.sn) where d.user_id = %s and d.type = %s order by count desc limit 10 "
+            box = (id, type)
+            curs.execute(sql, box)
+            data = curs.fetchall()
+
+            y = []
+            for i in data:
+                y.append(float(i['wat']))
+
+            conn.commit()
+            x = np.arange(0,10)
+            now= datetime.now()
+            current_time = str(datetime.now())
+
+            plt.plot(x,y)
+            plt.savefig('media\%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
+            graph_name = 'http://13.125.200.206:8000/media/%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
+            # graph_name = '%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
+            # plt.savefig('%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
+            # plt.show()
+            return render(request, 'body.html', {'result':graph_name})

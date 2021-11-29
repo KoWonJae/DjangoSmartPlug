@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from students import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('', views.get_main),
@@ -28,6 +30,7 @@ urlpatterns = [
     path('current', views.get_current),
     path('current2', views.get_current2),
     path('accumulate', views.get_accumulate),
-    path('average', views.get_average)
+    path('average', views.get_average),
+    path('statistics', views.get_statistics)
     #path('Eproducts/', include('students.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
