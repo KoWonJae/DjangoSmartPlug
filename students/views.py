@@ -161,7 +161,6 @@ def del_device(request):
 
             return render(request, 'fail.html', {'s_no':s_id, 's_wat':s_no})
 
-#id wat send_time sn
 def add_cur_wat(request):
     if request.method == 'GET':
         s_no = request.GET['sn']
@@ -187,6 +186,8 @@ def add_cur_wat(request):
         sql = "select count from CurrentWattage where sn = %s order by count desc limit 1"
         curs.execute(sql, s_no)
         count = curs.fetchone()
+        if(count['count'] == None):
+            count = 0
         count = count['count'] + 1
 
         #현재 전력량 데이터 삽입
@@ -207,7 +208,7 @@ def add_cur_wat(request):
         acc_wat_eproduct = (user_id, data["type"], month)
         curs.execute(sql, acc_wat_eproduct)
         acc_wat = curs.fetchone()
-        
+
         if (data['limit'] != None):
             if (acc_wat['sum(wat)'] > data['limit']):
                 turn_off(request, conn, curs, user_id, data['type'])
@@ -224,7 +225,6 @@ def add_cur_wat(request):
 
 
     return render(request, 'on.html') #  __ON__ -> __OFF__ #/off
-
 #360개 더해서 누적전력량에 추가
 def add_acc_wat(request,conn, curs, user_id, sn):
     sql = "select wat from CurrentWattage2 order by count desc limit 360"
