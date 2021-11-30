@@ -307,3 +307,137 @@ def get_statistics(request):
             # plt.savefig('%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
             # plt.show()
             return render(request, 'body.html', {'result':graph_name})
+            
+
+#전원 켜기
+def turn_on(request, conn, curs, s_id, s_type):
+    sql = "select * from Device where user_id = %s and type = %s"
+    eproduct = (s_id, s_type)
+    curs.execute(sql, eproduct)
+    result = curs.fetchone()
+
+    if (result == None):
+        return render(request, 'fail.html')
+
+    sql = "UPDATE Device SET power=True WHERE sn = %s"
+    curs.execute(sql, result['sn'])
+    conn.commit()
+    return
+
+#url로 전원 끄기
+def url_turn_on(request):
+    if request.method == 'POST':
+        conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
+                               password='wj092211', db='smartplug')
+        curs = conn.cursor(pymysql.cursors.DictCursor)
+
+        data = json.loads(request.body)
+        s_id = data["id"]
+        s_type = data["type"]
+    turn_on(request, conn, curs, s_id, s_type)
+    return  render(render, json.dumps({'result': 'pass'}))
+
+
+#전원 끄기
+def turn_off(request, conn, curs, s_id, s_type):
+    sql = "select * from Device where user_id = %s and type = %s"
+    eproduct = (s_id, s_type)
+    curs.execute(sql, eproduct)
+    result = curs.fetchone()
+
+    if(result == None):
+        return render(request, 'fail.html')
+
+    sql = "UPDATE Device SET power=False WHERE sn = %s"
+    curs.execute(sql, result['sn'])
+    conn.commit()
+    return render(request, 'pass.html')
+
+#url로 전원 끄기
+def url_turn_off(request):
+    if request.method == 'POST':
+        conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
+                               password='wj092211', db='smartplug')
+        curs = conn.cursor(pymysql.cursors.DictCursor)
+
+        data = json.loads(request.body)
+        s_id = data["id"]
+        s_type = data["type"]
+
+    return turn_off(request, conn, curs, s_id,s_type)
+
+#제한 걸기
+def add_limit(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        s_id = data["id"]
+        s_type = data["type"]
+        s_limit = data["limit"]
+        conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
+                               password='wj092211', db='smartplug')
+        curs = conn.cursor(pymysql.cursors.DictCursor)
+
+        sql = "select sn from Device where user_id = %s and type = %s"
+        eproduct = (s_id, s_type)
+        curs.execute(sql, eproduct)
+        data = curs.fetchone()
+
+        sql = "UPDATE Device SET Device.limit = %s WHERE sn = %s"
+        eproduct = (s_limit, data["sn"])
+        curs.execute(sql, eproduct)
+        conn.commit()
+
+        return render(request, 'pass.html')
+
+#친구랑 비교
+def add_friend_id(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        s_id = data["id"]
+        s_type = data["type"]
+        s_friend_id = data["friend_id"]
+
+        mon = datetime.today().month
+
+        conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
+                               password='wj092211', db='smartplug')
+        curs = conn.cursor(pymysql.cursors.DictCursor)
+
+        sn_eproduct = (s_id, s_type)
+        sql = "select sn from Device where user_id = %s and type = %s"
+        curs.execute(sql, sn_eproduct)
+        sn = curs.fetchone()
+
+        sql = "UPDATE Device SET friend_id = %s WHERE sn = %s"
+        eproduct = (s_friend_id, sn['sn'])
+        curs.execute(sql, eproduct)
+        conn.commit()
+
+    return render(request, 'pass.html')
+
+#임시 짬통
+def friend_compare(request, conn, curs, s_id, s_type, month):
+    sql = "select sum(wat) from AccumulateWattage2 a LEFT JOIN Device d ON (a.sn = d.sn) where d.user_id = %s and d.type = %s and month(a.send_time) = %s"
+    eproduct = (s_id, s_type, month)
+    curs.execute(sql, eproduct)
+    my_result = curs.fetchone()
+    if (my_result == None):
+        return render(request, 'fail.html')
+
+    sql = "select sum(wat) from AccumulateWattage2 a LEFT JOIN Device d ON (a.sn = d.sn) where d.user_id = %s and d.type = %s and month(a.send_time) = %s"
+    eproduct = (s_friend_id, s_type, month)
+    curs.execute(sql, eproduct)
+    friend_result = curs.fetchone()
+    if (friend_result == None):
+        return render(request, 'fail.html')
+
+    if (my_result["my_result"] >= friend_result["friend_result"] * 1.2):
+        temp_eproduct = (s_id, s_type)
+        sql = "select sn from Device where user_id = %s and type = %s"
+        curs.execute(sql, temp_eproduct)
+        sn = curs.fetchone()
+
+        sql = "UPDATE Device SET power=False WHERE sn = %s"
+        curs.execute(sql, sn['sn'])
+        conn.commit()
+        return render(request, 'pass.html')

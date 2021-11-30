@@ -26,11 +26,14 @@ urlpatterns = [
     path('sensor', views.add_cur_wat),
     path('add', views.get_device),
     path('del', views.del_device),
-    #del은 아직 삭제 구현x 그래서 전부 pass
     path('current', views.get_current),
     path('current2', views.get_current2),
     path('accumulate', views.get_accumulate),
     path('average', views.get_average),
+    
+    path('on/', views.url_turn_on),
+    path('off/', views.url_turn_off),
+    path('limit/', views.add_limit),
     path('statistics', views.get_statistics)
     #path('Eproducts/', include('students.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
