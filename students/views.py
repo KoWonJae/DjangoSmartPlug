@@ -171,30 +171,59 @@ def add_cur_wat(request):
         conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin',
                                password='wj092211', db='smartplug')
         curs = conn.cursor(pymysql.cursors.DictCursor)
-        sql = "select user_id from Device where sn = %s"
+
+        sql = "select * from Device where sn = %s"
         curs.execute(sql, s_no)
-        user_id = curs.fetchone()
-        if(user_id == None):
+        data = curs.fetchone()
+
+        #sn 등록 여부 검색
+        if(data == None):
             return render(request, 'minus.html')
-        user_id = user_id['user_id']
+        #아두이노가 꺼져있는지 확인
+        if(data['power'] == False):
+            return render(request, 'off.html')
+        user_id = data['user_id']
 
         sql = "select count from CurrentWattage where sn = %s order by count desc limit 1"
         curs.execute(sql, s_no)
         count = curs.fetchone()
         count = count['count'] + 1
 
+        #현재 전력량 데이터 삽입
         eproduct = (user_id, s_no, s_wat, now, count)
-        print(eproduct)
         sql = "insert into CurrentWattage values (%s, %s, %s, %s, %s)"
         curs.execute(sql, eproduct)
         conn.commit()
 
+        #누적 전력량 데이터 삽입
         if (count % 360 == 0):
             add_acc_wat(request, conn, curs, user_id, s_no)
 
-    return render(request, 'data2.html')
+        #limit 제한 넘는지 확인
+        month = datetime.today().month
+        sql = "select sum(wat) from AccumulateWattage a LEFT JOIN Device d ON (a.sn = d.sn) where d.user_id = %s and " \
+              "d.type = %s and month(a.send_time) = %s "
+
+        acc_wat_eproduct = (user_id, data["type"], month)
+        curs.execute(sql, acc_wat_eproduct)
+        acc_wat = curs.fetchone()
+        
+        if (data['limit'] != None):
+            if (acc_wat['sum(wat)'] > data['limit']):
+                turn_off(request, conn, curs, user_id, data['type'])
+                return render(request, 'off.html')
+
+        #친구id와 비교 및 제어
+        if (data['friend_id'] != None):
+            acc_wat_eproduct = (data['friend_id'], data['type'], month)
+            curs.execute(sql, acc_wat_eproduct)
+            friend_acc_wat = curs.fetchone()
+            if (acc_wat['sum(wat)'] > friend_acc_wat['sum(wat)'] * 1.2):
+                turn_off(request, conn, curs, user_id, data['type'])
+                return render(request, 'off.html')
 
 
+    return render(request, 'on.html') #  __ON__ -> __OFF__ #/off
 
 #360개 더해서 누적전력량에 추가
 def add_acc_wat(request,conn, curs, user_id, sn):
@@ -335,9 +364,9 @@ def url_turn_on(request):
         s_id = data["id"]
         s_type = data["type"]
     turn_on(request, conn, curs, s_id, s_type)
-    return  render(render, json.dumps({'result': 'pass'}))
-
-
+    return  render(request,'pass.html')
+    
+    
 #전원 끄기
 def turn_off(request, conn, curs, s_id, s_type):
     sql = "select * from Device where user_id = %s and type = %s"
