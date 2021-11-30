@@ -5,6 +5,10 @@ import json
 import numpy as np
 # Create your views here.
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import os
+import matplotlib.ticker as mticker
+
 def regEproduct(request):
     return render(request, 'eproducts.html')
 
@@ -286,8 +290,18 @@ def get_statistics(request):
             now= datetime.now()
             current_time = str(datetime.now())
 
+            print('파일이름'+__file__)
+            print('상대위치'+os.path.realpath(__file__))
             plt.plot(x,y)
+            path = '.\\font\\NanumGothic-Bold.ttf'
+            fontprop = fm.FontProperties(fname=path, size=11)
+            plt.title("최근 열흘 사용량", fontproperties = fontprop)
+            plt.gca().yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f W'))
+            plt.ylabel("사용 전력량", fontproperties = fontprop)
+            plt.xlabel('사용일', fontproperties = fontprop)
             plt.savefig('media/%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
+            
+            
             graph_name = 'http://13.125.200.206:8000/media/%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
             # graph_name = '%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
             # plt.savefig('%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
