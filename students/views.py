@@ -2,6 +2,7 @@ from django.shortcuts import render
 import pymysql
 from datetime import datetime
 import json
+from django.http import JsonResponse
 import numpy as np
 # Create your views here.
 import matplotlib.pyplot as plt
@@ -75,32 +76,21 @@ def get_device(request):
         curs.execute(query, s_no)
         result = curs.fetchone()
         try:
-            if(result['sn'] == s_no and result['user_id'] ==  s_id):
-                return render(request, 'fail.html', {'s_no':s_id, 's_wat':s_no})
+            if(result['sn'] == s_no):                               
+                return JsonResponse({"result": "fail",
+                                    "reason": "이미 등록된 기기입니다"})
         except:
 
             eproduct = ( s_no, s_type, s_id)
-        # query = "select EXISTS (select id from Device where id=찾는 값 limit 1) as success"
-        # query2 = "SELECT * FROM user where name = %s"
-            sql = "insert into Device values (%s, %s, %s)"
+            sql = "insert into Device (sn, type, user_id) values (%s, %s, %s)"
             curs2.execute(sql, eproduct)
             conn2.commit()
            
-            return render(request, 'pass.html', {'s_no':s_id, 's_wat':s_no})
+            return JsonResponse({"result" : "pass"})
 
 
 def get_current2(request):
-    # if request.method == 'POST':
-        # data = json.loads(request.body)
-        # s_id = body["id"]
-        # s_no = body["sn"]
-        # s_type = body["type"]
-        # conn = pymysql.connect(host='database-1.crfozxaqi7yk.ap-northeast-2.rds.amazonaws.com', user='admin', password='wj092211', db='smartplug')
-        # curs = conn.cursor(pymysql.cursors.DictCursor)
-        # eproduct = ( s_id, s_no, s_type)
-        # sql = "insert into Device values (%s, %s, %s)"
-        # curs.execute(sql, eproduct)
-        # conn.commit()
+    
     if request.method == 'POST':
         data = json.loads(request.body)
         s_id = data["id"]
@@ -133,9 +123,9 @@ def get_current(request):
         data = curs.fetchone()
 
         if(data == None):
-            return render(request, 'minus.html')
+            return JsonResponse({"result": -1})
         else :
-            return render(request, 'data3.html', {'s_wat' : data['wat']})
+            return JsonResponse({"result": data['wat']})
 
 
 def del_device(request):
@@ -154,12 +144,14 @@ def del_device(request):
                 del_query = "DELETE FROM Device where sn = %s"
                 curs.execute(del_query, s_no)
                 conn.commit()
-                return render(request, 'pass.html', {'s_no':s_id, 's_wat':s_no})
+                return JsonResponse({"result": "pass"})
             else:
-                return render(request, 'fail.html', {'s_no':s_id, 's_wat':s_no})
+                return JsonResponse({"result": "fail",
+                                    "reason": "이미 등록된 기기입니다"})
         except:
 
-            return render(request, 'fail.html', {'s_no':s_id, 's_wat':s_no})
+            return JsonResponse({"result": "fail",
+                                    "reason": "이미 등록된 기기입니다"})
 
 def add_cur_wat(request):
     if request.method == 'GET':
@@ -258,9 +250,9 @@ def get_accumulate(request):
         data = curs.fetchone()
 
         if (data == None):
-            return render(request, 'minus.html')
+            return JsonResponse({"result": -1})
         else:
-            return render(request, 'data3.html', {'s_wat' : data['wat']})
+            return JsonResponse({"result": data['wat']})
 
 
 def get_average(request):
@@ -294,7 +286,7 @@ def get_average(request):
             except:
                 continue
 
-        return render(request, 'data3.html', {'s_wat':result})
+        return JsonResponse({"result": result})
         
 def get_statistics(request):
     if request.method == 'POST':
@@ -335,7 +327,7 @@ def get_statistics(request):
             # graph_name = '%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second)
             # plt.savefig('%s%s%s%sgraph.png' %(now.day, now.hour, now.minute, now.second))
             # plt.show()
-            return render(request, 'body.html', {'result':graph_name})
+            return JsonResponse({'result': graph_name})
             
 
 #전원 켜기
@@ -364,10 +356,9 @@ def url_turn_on(request):
         s_id = data["id"]
         s_type = data["type"]
     turn_on(request, conn, curs, s_id, s_type)
-    return  render(request,'pass.html')
-    
-    
-#전원 끄기
+    return JsonResponse({"result": "pass"})
+ 
+#전원 끄기    
 def turn_off(request, conn, curs, s_id, s_type):
     sql = "select * from Device where user_id = %s and type = %s"
     eproduct = (s_id, s_type)
@@ -380,7 +371,7 @@ def turn_off(request, conn, curs, s_id, s_type):
     sql = "UPDATE Device SET power=False WHERE sn = %s"
     curs.execute(sql, result['sn'])
     conn.commit()
-    return render(request, 'pass.html')
+    return
 
 #url로 전원 끄기
 def url_turn_off(request):
@@ -392,8 +383,8 @@ def url_turn_off(request):
         data = json.loads(request.body)
         s_id = data["id"]
         s_type = data["type"]
-
-    return turn_off(request, conn, curs, s_id,s_type)
+    turn_off(request, conn, curs, s_id, s_type)
+    return JsonResponse({"result": "pass"})
 
 #제한 걸기
 def add_limit(request):
@@ -416,7 +407,7 @@ def add_limit(request):
         curs.execute(sql, eproduct)
         conn.commit()
 
-        return render(request, 'pass.html')
+        return JsonResponse({"result": "pass"})
 
 #친구랑 비교
 def add_friend_id(request):
@@ -442,7 +433,7 @@ def add_friend_id(request):
         curs.execute(sql, eproduct)
         conn.commit()
 
-    return render(request, 'pass.html')
+    return JsonResponse({"result": "pass"})
 
 #임시 짬통
 def friend_compare(request, conn, curs, s_id, s_type, month):
@@ -451,14 +442,16 @@ def friend_compare(request, conn, curs, s_id, s_type, month):
     curs.execute(sql, eproduct)
     my_result = curs.fetchone()
     if (my_result == None):
-        return render(request, 'fail.html')
+        return JsonResponse({"result": "fail",
+                             "reason": "등록되지 않은 기기입니다"})
 
     sql = "select sum(wat) from AccumulateWattage2 a LEFT JOIN Device d ON (a.sn = d.sn) where d.user_id = %s and d.type = %s and month(a.send_time) = %s"
     eproduct = (s_friend_id, s_type, month)
     curs.execute(sql, eproduct)
     friend_result = curs.fetchone()
     if (friend_result == None):
-        return render(request, 'fail.html')
+        return JsonResponse({"result": "fail",
+                             "reason": "등록되지 않은 사용자입니다"})
 
     if (my_result["my_result"] >= friend_result["friend_result"] * 1.2):
         temp_eproduct = (s_id, s_type)
@@ -469,4 +462,4 @@ def friend_compare(request, conn, curs, s_id, s_type, month):
         sql = "UPDATE Device SET power=False WHERE sn = %s"
         curs.execute(sql, sn['sn'])
         conn.commit()
-        return render(request, 'pass.html')
+        return JsonResponse({"result" : "pass"})
