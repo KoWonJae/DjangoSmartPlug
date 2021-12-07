@@ -311,11 +311,15 @@ def get_statistics(request):
             now= datetime.now()
             current_time = str(datetime.now())
 
+            fig = plt.figure(figsize=(5,2))            
+            
             print('파일이름'+__file__)
             print('상대위치'+os.path.realpath(__file__))
             plt.plot(x,y)
             path = './font/NanumGothic-Bold.ttf'
-            fontprop = fm.FontProperties(fname=path, size=11)
+            fontprop = fm.FontProperties(fname=path, size=11)            
+
+            
             plt.title("최근 열흘 사용량", fontproperties = fontprop)
             plt.gca().yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f W'))
             plt.ylabel("사용 전력량", fontproperties = fontprop)
